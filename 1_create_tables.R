@@ -9,12 +9,11 @@ con <- odbcConnect("ctf")
 
 for (site_num in 1:nrow(sites)) {
     sitecode <- sites[site_num, ]$sitecode
-    pred_pix <- sites[site_num, ]$pred_pix
     train_pix <- sites[site_num, ]$train_pix
     sqlQuery(con, paste0("DROP TABLE cit.", sitecode, "_predictor;"))
     create_pred_str <- paste0("CREATE TABLE cit.", sitecode, "_predictor
            (
-            rowid IDENTITY(0,1,", pred_pix, "),
+            rowid IDENTITY(0,1),
             pixelid INT,
             pixel_coord VARCHAR(100),
             r1 INT,
@@ -37,7 +36,7 @@ for (site_num in 1:nrow(sites)) {
     sqlQuery(con, paste0("DROP TABLE cit.", sitecode, "_predictor_mask;"))
     create_mask_str <- paste0("CREATE TABLE cit.", sitecode, "_predictor_mask
            (
-            rowid IDENTITY(0,1,", pred_pix, "),
+            rowid IDENTITY(0,1),
             datayear INT,
             pixelid INT,
             pixel_coord VARCHAR(100),
