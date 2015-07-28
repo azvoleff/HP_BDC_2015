@@ -5,15 +5,17 @@ library(vRODBC)
 
 sites <- read.csv('sitecode_key.csv')
 
+sites <- sites[sites$sitecode != 'PSH', ]
+
 con <- odbcConnect("ctf")
 
-for (site_num in 1:nrow(sites)) {
-    sitecode <- sites[site_num, ]$sitecode
-    train_pix <- sites[site_num, ]$train_pix
+for (sitecode in sites$sitecode) {
+    train_pix <- sites$train_pix[sites$sitecode == sitecode]
+    pred_pix <- sites$pred_pix[sites$sitecode == sitecode]
     sqlQuery(con, paste0("DROP TABLE cit.", sitecode, "_predictor;"))
     create_pred_str <- paste0("CREATE TABLE cit.", sitecode, "_predictor
            (
-            rowid IDENTITY(0,1),
+            rowid IDENTITY(0,1,", pred_pix, "),
             pixelid INT,
             pixel_coord VARCHAR(100),
             r1 INT,
@@ -30,19 +32,19 @@ for (site_num in 1:nrow(sites)) {
             slop INT,
             asp INT,
             datayear INT
-           ) ORDER BY pixelid SEGMENTED BY HASH(pixelid) ALL NODES;")
+           ) ORDER BY rowid SEGMENTED BY HASH(pixelid) ALL NODES;")
     sqlQuery(con, create_pred_str)
 
     sqlQuery(con, paste0("DROP TABLE cit.", sitecode, "_predictor_mask;"))
     create_mask_str <- paste0("CREATE TABLE cit.", sitecode, "_predictor_mask
            (
-            rowid IDENTITY(0,1),
+            rowid IDENTITY(0,1,", pred_pix, "),
             datayear INT,
             pixelid INT,
             pixel_coord VARCHAR(100),
             fill INT,
             fmask INT
-           ) ORDER BY pixelid SEGMENTED BY HASH(pixelid) ALL NODES;")
+           ) ORDER BY rowid SEGMENTED BY HASH(pixelid) ALL NODES;")
     sqlQuery(con, create_mask_str)
 
     sqlQuery(con, paste0("DROP TABLE cit.", sitecode, "_training;"))
@@ -65,13 +67,13 @@ for (site_num in 1:nrow(sites)) {
             slop INT,
             asp INT,
             datayear INT
-           ) ORDER BY pixelid SEGMENTED BY HASH(pixelid) ALL NODES;")
+           ) ORDER BY rowid SEGMENTED BY HASH(pixelid) ALL NODES;")
     sqlQuery(con, create_train_str)
 }
 
-# Create spatial ref table
-
-sqlQuery(con, paste0("DROP TABLE cit.", sitecode, "spatial_ref;"))
+# Load spatial ref data
+message(paste0("Loading image metadata..."))
+sqlQuery(con, "DROP TABLE cit.spatial_ref;")
 create_sr_str <- "CREATE TABLE cit.spatial_ref
 (
  sitecode VARCHAR(10),
@@ -88,7 +90,25 @@ create_sr_str <- "CREATE TABLE cit.spatial_ref
 );"
 sqlQuery(con, create_sr_str)
 
-sqlQuery(con, paste0("DROP TABLE cit.", sitecode, "teamsites;"))
+metadata_sql <- "COPY cit.spatial_ref( \
+ sitecode,
+ datayear,
+ imgtype,
+ nrows,
+ ncols,
+ xmn,
+ xmx,
+ ymn,
+ ymx,
+ nl,
+ proj4string 
+) FROM LOCAL '/home/team/HP_BDC_2015/image_metadata.txt' DELIMITER AS '|'
+REJECTED DATA './logs/image_metadata_rejected.dat' EXCEPTIONS './logs/image_metadata_exceptions.log'; "
+sqlQuery(con, metadata_sql)
+message(paste0("Finished loading image metadata."))
+
+# Load site metadata
+sqlQuery(con, "DROP TABLE cit.teamsites;")
 create_ts_str <- "CREATE TABLE cit.teamsites
 (
  site_id INT,
