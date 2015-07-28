@@ -11,8 +11,8 @@ library(HPdata) # for db2dframe
 pred_cols <- list("r1", "r2", "r3", "r4", "r5", "r7", "veg", "vegmean", 
                   "vegvar", "vegdis", "elev", "slop", "asp", "datayear")
 
-distributedR_start(cluster_conf='/opt/hp/distributedR/conf/cluster_conf.xml')
 #distributedR_start(cluster_conf='/home/team/cluster_conf_1.xml')
+distributedR_start(cluster_conf='/opt/hp/distributedR/conf/cluster_conf.xml')
 
 #sites <- read.csv('/home/team/HP_BDC_2015/sitecode_key.csv')
 sites <- read.csv('/home/radmin/HP_BDC_2015/sitecode_key.csv')
@@ -21,52 +21,51 @@ sitecodes <- sites$sitecode
 sitecode <- 'PSH'
 
 foreach (sitecode=sitecodes) %do% {
-    tr_sql <- paste("SELECT", paste(c(pred_cols, "type"), collapse=", "), "FROM cit.PSH_training;")
-
     # Below doesn't work, so use with verticaConnector=FALSE
     #train_data <- db2dframe(paste0("cit.", sitecode, "_training"), 'ctf',
     #                        features=c(pred_cols, "type"))
 
+    message(date(), ": Loading training data")
     train_data <- db2dframe(paste0("cit.", sitecode, "_training"), 'ctf',
                             features=c(pred_cols, "type"), verticaConnector=FALSE)
+    message(date(), ": Finished loading training data")
 
-    # Ensure NA codes are handled properly
-    train_data[train_data == -32768] <- NA
-
-    message(date(), ": Training randomForest model")
+    message(date(), ": Training random forest model")
     rfmodel <- hpdrandomForest(type ~ ., data=train_data, na.action=na.omit, ntree=2000)
-    message(date(), ": finished training randomForest model")
+    message(date(), ": Finished training random forest model")
 
-    # Use deploy.model around here...
-    deploy.model(model=rfmodel, dsn='ctf', modelName=paste0(sitecode, '_rfmodel'),
-                 modelComments=paste('Random forest model for', sitecode))
-
-
-    con <- odbcConnect("ctf")
-    apply_sql <- paste0("CREATE TABLE ", sitecode, "_prediction", " AS
-                        (SELECT ", paste(pred_cols, collapse=", "),
-                        " USING PARAMETERS model='dbadmin/", sitecode, "'",
-                        " TYPE='response')")
-    sqlQuery(con, apply_sql)
-
-    # Set missing pixels in result to NA using the mask
+    # Below doesn't work:
+    # deploy.model(model=rfmodel, dsn='ctf', modelName=paste0(sitecode, '_rfmodel'),
+    #              modelComments=paste('Random forest model for', sitecode))
+    
+    # Below doesn't work because model won't deploy to vertica
+    # con <- odbcConnect("ctf")
+    # apply_sql <- paste0("CREATE TABLE ", sitecode, "_prediction", " AS
+    #                     (SELECT ", paste(pred_cols, collapse=", "),
+    #                     " USING PARAMETERS model='dbadmin/", sitecode, "'",
+    #                     " TYPE='response')")
+    # sqlQuery(con, apply_sql)
 
     message(date(), ": Started loading data as dframe")
     indep_data <- db2dframe(paste0("cit.", sitecode, "_predictor"), 'ctf',
                             features=pred_cols, verticaConnector=FALSE)
-    message(date(), ": Finished loading dframe")
+    message(date(), ": Finished loading data as dframe")
 
-    message(date(), ": Recoding NAs in dframe")
-    # Recode NAs in the independent variables used for the predictions
-    foreach(i, 1:npartitions(indep_data),
-        code_NAs <- function(x=splits(indep_data, i)) {
-        x[x == -32768] <- NA
-        update(x)
-        }
-    )
-    message(date(), ": Finished recoding NAs in dframe")
-
-    message(date(), ": Started predicting from randomForest model")
+    message(date(), ": Started applying random forest model")
     res <- predict.hpdRF_parallelTree(rfmodel, newdata=indep_data)
-    message(date(), ": finished predicting from randomForest model")
+    message(date(), ": Finished applying random forest model")
+
+    message(date(), ": Saving results to vertica")
+    #TODO: Save results back to vertica
+    sqlQuery(con, paste0("DROP TABLE cit.", sitecode, "_prediction;"))
+    create_pxn_str <- paste0("CREATE TABLE cit.", sitecode, "_prediction
+           (
+            rowid IDENTITY(0,1,", nrow(res), "),
+            pixelid INT,
+            type VARCHAR(50)
+           ) ORDER BY pixelid SEGMENTED BY HASH(pixelid) ALL NODES;")
+    sqlQuery(con, create_pxn_str)
+
+
+    message(date(), ": Finished saving results to vertica")
 }
