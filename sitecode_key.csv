@@ -1,0 +1,17 @@
+sitecode,sitename,sitename_short,sitename_abbrev,sitename_database,sitetype,country,continent,sitename_pretty,sitename_pretty_detailed,continent_long,database_code,train_pix,pred_pix
+BBS,Bukit Barisan,Bukit Barisan,Bukit Barisan,Bukit Barisan,III,IDN,AS,Indonesia,Indonesia,Asia,10,102047,30000957
+BCI,Barro Colorado Nature Monument - Soberania National Park,Barro Colorado - Soberania,Barro Col.,Barro Colorado Nature Monument - Soberania National Park,II,PAN,LA,Panama,Panama,Latin America,27,18850,10405570
+BIF,Bwindi Impenetrable Forest,Bwindi,Bwindi,Bwindi Impenetrable Forest,III,UGA,AF,Uganda,Uganda,Africa,7,108615,15544870
+CAX,Caxiuanã,Caxiuanã,Caxiuanã,CaxiuanÃ£,I,BRA,LA,Brazil 1,Brazil (Caxiuanã),Latin America,1,117406,7866581
+COU,Cocha Cashu - Manu National Park,Cocha Cashu - Manu,Cocha Cashu,Cocha Cashu - Manu National Park,I,PER,LA,Peru 1,Peru (Cocha Cashu),Latin America,29,512312,24106346
+CSN,Central Suriname Nature Reserve,Central Suriname,Cent. Suriname,Central Suriname Nature Reserve,I,SUR,LA,Surinam,Surinam,Latin America,2,140075,25131289
+KRP,Korup National Park,Korup,Korup,Korup National Park,II,CMR,AF,Cameroon,Cameroon,Africa,30,,5759644
+MAS,Manaus,Manaus,Manaus,Manaus,II,BRA,LA,Brazil 2,Brazil (Manaus),Latin America,3,283180,55615203
+NAK,Nam Kading,Nam Kading,Nam Kading,Nam Kading,III,LAO,AS,Laos,Laos,Asia,11,105678,24014602
+NNN,Nouabalé Ndoki,Nouabalé Ndoki,Nou. Ndoki,NouabalÃ© Ndoki,I,COG,AF,Congo Republic,Congo Republic,Africa,13,,10500840
+PSH,Pasoh Forest Reserve,Pasoh,Pasoh,Pasoh Forest Reserve,III,MYS,AS,Malaysia,Malaysia,Asia,32,19547,5815080
+RNF,Ranomafana,Ranomafana,Ranomafana,Ranomafana,III,MDG,AF,Madagascar,Madagascar,Africa,25,9861,4369248
+UDZ,Udzungwa,Udzungwa,Udzungwa,Udzungwa,II,TZA,AF,Tanzania,Tanzania,Africa,26,103295,50910700
+VB,Volcán Barva,Volcán Barva,Volcán Barva,VolcÃ¡n Barva,III,CRI,LA,Costa Rica,Costa Rica,Latin America,5,56464,23575515
+YAN,Yanachaga Chimillén National Park,Yanachaga Chimillén,Yan. Chimillén,Yanachaga ChimillÃ©n National Park,I,PER,LA,Peru 2,Peru (Yanachaga),Latin America,28,134875,15629283
+YAS,Yasuni,Yasuni,Yasuni,Yasuni,I,ECU,LA,Ecuador,Ecuador,Latin America,19,43446,39320250
