@@ -5,7 +5,7 @@ library(vRODBC)
 
 sites <- read.csv('sitecode_key.csv')
 
-sites <- sites[sites$sitecode != 'PSH', ]
+sites <- sites[sites$sitecode == 'BBS', ]
 
 con <- odbcConnect("ctf")
 

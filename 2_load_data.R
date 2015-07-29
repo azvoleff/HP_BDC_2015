@@ -5,7 +5,7 @@ sites <- read.csv('sitecode_key.csv')
 
 mosaics <- dir('/home/team/Mosaics', pattern='[A-Z]{2,3}_mosaic_[0-9]{4}_predictors.txt')
 
-mosaics <- mosaics[!grepl('PSH', mosaics)]
+mosaics <- mosaics[grepl('BBS', mosaics)]
 
 sitecodes <- str_extract(mosaics, '^[A-Z]{2,3}')
 years <- str_extract(mosaics, '[0-9]{4}')
