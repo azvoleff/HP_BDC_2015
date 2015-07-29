@@ -2,6 +2,7 @@ library(vRODBC)
 library(distributedR)
 library(HPdclassifier) # for hpdrandomForest
 library(HPdata) # for db2dframe
+library(foreach) # for db2dframe
 
 pred_cols <- list("r1", "r2", "r3", "r4", "r5", "r7", "veg", "vegmean", 
                   "vegvar", "vegdis", "elev", "slop", "asp", "datayear")
@@ -10,8 +11,6 @@ distributedR_start(cluster_conf='/opt/hp/distributedR/conf/cluster_conf.xml')
 
 sites <- read.csv('/home/radmin/HP_BDC_2015/sitecode_key.csv')
 sitecodes <- sites$sitecode
-
-sitecodes <- 'BBS'
 
 foreach (sitecode=sitecodes) %do% {
     message(date(), ": Loading training data")
