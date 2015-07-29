@@ -37,7 +37,8 @@ done
 
 sitecodes=( $( ls /home/radmin/Mosaics | grep -oP "\K^[A-Z]{2,3}" | uniq ) )
 
-for i in "${sitecodes[@]}"
+for sitecode in "${sitecodes[@]}"
+do
     echo Started Copy Year ${sitecode} Training at `date`
     /opt/vertica/bin/vsql -h 10.0.0.32 -U dbadmin -w $pword -c " \
     COPY cit.${sitecode}_training( \

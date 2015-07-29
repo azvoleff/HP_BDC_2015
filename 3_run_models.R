@@ -11,6 +11,8 @@ distributedR_start(cluster_conf='/opt/hp/distributedR/conf/cluster_conf.xml')
 sites <- read.csv('/home/radmin/HP_BDC_2015/sitecode_key.csv')
 sitecodes <- sites$sitecode
 
+sitecodes <- 'BBS'
+
 foreach (sitecode=sitecodes) %do% {
     message(date(), ": Loading training data")
     train_data <- db2dframe(paste0("cit.", sitecode, "_training"), 'ctf',
@@ -29,10 +31,12 @@ foreach (sitecode=sitecodes) %do% {
 
     message(date(), ": Running in-database prediction in vertica")
     con <- odbcConnect("ctf")
-    apply_sql <- paste0("CREATE TABLE ", sitecode, "_prediction", " AS
-                        (SELECT ", paste(pred_cols, collapse=", "),
-                        " USING PARAMETERS model='dbadmin/", sitecode, "'",
-                        " TYPE='response')")
+    apply_sql <- paste0("CREATE TABLE cit.", sitecode, "_prediction", 
+                        " AS (SELECT type, randomforestpredict(",
+                        paste(pred_cols, collapse=", "),
+                        " USING PARAMETERS model='dbadmin/", sitecode,
+                        "_rfmodel', TYPE='response') FROM cit.", sitecode,
+                        "_predictors WHERE datayear = 2010);")
     sqlQuery(con, apply_sql)
     message(date(), ": Finished running in-database prediction in vertica")
 
