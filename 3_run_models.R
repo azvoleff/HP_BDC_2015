@@ -1,8 +1,3 @@
-#Sys.setenv(VERTICAINI="/home/team/vRODBC/vertica.ini")
-#Sys.setenv(ODBCINI="/home/team/vRODBC/odbc.ini")
-Sys.setenv(VERTICAINI="/home/radmin/vRODBC/vertica.ini")
-Sys.setenv(ODBCINI="/home/radmin/vRODBC/odbc.ini")
-
 library(vRODBC)
 library(distributedR)
 library(HPdclassifier) # for hpdrandomForest
@@ -11,14 +6,10 @@ library(HPdata) # for db2dframe
 pred_cols <- list("r1", "r2", "r3", "r4", "r5", "r7", "veg", "vegmean", 
                   "vegvar", "vegdis", "elev", "slop", "asp", "datayear")
 
-#distributedR_start(cluster_conf='/home/team/cluster_conf_1.xml')
 distributedR_start(cluster_conf='/opt/hp/distributedR/conf/cluster_conf.xml')
 
-#sites <- read.csv('/home/team/HP_BDC_2015/sitecode_key.csv')
 sites <- read.csv('/home/radmin/HP_BDC_2015/sitecode_key.csv')
 sitecodes <- sites$sitecode
-
-sitecodes <- 'BBS'
 
 foreach (sitecode=sitecodes) %do% {
     message(date(), ": Loading training data")
@@ -31,23 +22,25 @@ foreach (sitecode=sitecodes) %do% {
                                   ntree=2000)
     message(date(), ": Finished training random forest model")
 
-    # Below doesn't work:
-    # deploy.model(model=rfmodel, dsn='ctf', modelName=paste0(sitecode, '_rfmodel'),
-    #              modelComments=paste('Random forest model for', sitecode))
-    
-    # Below doesn't work because model won't deploy to vertica
+    message(date(), ": Deploying model to vertica db")
+    deploy.model(model=rfmodel, dsn='ctf', modelName=paste0(sitecode, '_rfmodel'),
+                 modelComments=paste('Random forest model for', sitecode))
+    message(date(), ": Finished deploying model to vertica db")
+
+    message(date(), ": Running in-database prediction in vertica")
     con <- odbcConnect("ctf")
     apply_sql <- paste0("CREATE TABLE ", sitecode, "_prediction", " AS
                         (SELECT ", paste(pred_cols, collapse=", "),
                         " USING PARAMETERS model='dbadmin/", sitecode, "'",
                         " TYPE='response')")
     sqlQuery(con, apply_sql)
+    message(date(), ": Finished running in-database prediction in vertica")
 
     # message(date(), ": Started loading data as dframe")
     # indep_data <- db2dframe(paste0("cit.", sitecode, "_predictor"), 'ctf',
     #                         features=pred_cols, verticaConnector=FALSE)
     # message(date(), ": Finished loading data as dframe")
-
+    #
     # message(date(), ": Started applying random forest model")
     # res <- predict.hpdRF_parallelTree(rfmodel, newdata=indep_data)
     # message(date(), ": Finished applying random forest model")

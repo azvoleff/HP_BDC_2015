@@ -1,14 +1,10 @@
-Sys.setenv(VERTICAINI="/home/team/vRODBC/vertica.ini")
-Sys.setenv(ODBCINI="/home/team/vRODBC/odbc.ini")
-
 library(vRODBC)
 
 sites <- read.csv('sitecode_key.csv')
 
-sites <- sites[sites$sitecode == 'BBS', ]
-
 con <- odbcConnect("ctf")
 
+message("Creating data tables...")
 for (sitecode in sites$sitecode) {
     train_pix <- sites$train_pix[sites$sitecode == sitecode]
     pred_pix <- sites$pred_pix[sites$sitecode == sitecode]
@@ -70,9 +66,10 @@ for (sitecode in sites$sitecode) {
            ) ORDER BY rowid SEGMENTED BY HASH(pixelid) ALL NODES;")
     sqlQuery(con, create_train_str)
 }
+message("Finished creating data tables.")
 
 # Load spatial ref data
-message(paste0("Loading image metadata..."))
+message("Loading image metadata...")
 sqlQuery(con, "DROP TABLE cit.spatial_ref;")
 create_sr_str <- "CREATE TABLE cit.spatial_ref
 (
@@ -105,7 +102,7 @@ metadata_sql <- "COPY cit.spatial_ref( \
 ) FROM LOCAL '/home/team/HP_BDC_2015/image_metadata.txt' DELIMITER AS '|'
 REJECTED DATA './logs/image_metadata_rejected.dat' EXCEPTIONS './logs/image_metadata_exceptions.log'; "
 sqlQuery(con, metadata_sql)
-message(paste0("Finished loading image metadata."))
+message("Finished loading image metadata.")
 
 # Load site metadata
 sqlQuery(con, "DROP TABLE cit.teamsites;")
