@@ -29,16 +29,16 @@ foreach (sitecode=sitecodes) %do% {
                  modelComments=paste('Random forest model for', sitecode))
     message(date(), ": Finished deploying model to vertica db")
 
-    message(date(), ": Running in-database prediction in vertica")
-    con <- odbcConnect("ctf")
-    apply_sql <- paste0("CREATE TABLE cit.", sitecode, "_prediction", 
-                        " AS (SELECT type, randomforestpredict(",
-                        paste(pred_cols, collapse=", "),
-                        " USING PARAMETERS model='dbadmin/", sitecode,
-                        "_rfmodel', TYPE='response') FROM cit.", sitecode,
-                        "_predictors WHERE datayear = 2010);")
-    sqlQuery(con, apply_sql)
-    message(date(), ": Finished running in-database prediction in vertica")
+    # message(date(), ": Running in-database prediction in vertica")
+    # con <- odbcConnect("ctf")
+    # apply_sql <- paste0("CREATE TABLE cit.", sitecode, "_prediction", 
+    #                     " AS (SELECT type, randomForestpredict(",
+    #                     paste(pred_cols, collapse=", "),
+    #                     " USING PARAMETERS model='dbadmin/", sitecode,
+    #                     "_rfmodel', TYPE='response') FROM cit.", sitecode,
+    #                     "_predictor WHERE datayear = 2010);")
+    # sqlQuery(con, apply_sql)
+    # message(date(), ": Finished running in-database prediction in vertica")
 
     # message(date(), ": Started loading data as dframe")
     # indep_data <- db2dframe(paste0("cit.", sitecode, "_predictor"), 'ctf',
