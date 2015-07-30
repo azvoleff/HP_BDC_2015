@@ -4,8 +4,8 @@ library(HPdclassifier) # for hpdrandomForest
 library(HPdata) # for db2dframe
 library(foreach) # for db2dframe
 
-pred_cols <- list("r1", "r2", "r3", "r4", "r5", "r7", "veg", "vegmean", 
-                  "vegvar", "vegdis", "elev", "slop", "asp", "datayear")
+pred_cols <- c("r1", "r2", "r3", "r4", "r5", "r7", "veg", "vegmean", 
+               "vegvar", "vegdis", "elev", "slop", "asp", "datayear")
 
 distributedR_start()
 con <- odbcConnect("ctf")
@@ -40,7 +40,7 @@ foreach (sitecode=sitecodes) %do% {
     apply_sql <- paste0("INSERT INTO cit.", sitecode, "_prediction", 
                         " (SELECT randomForestpredict(",
                         paste(pred_cols, collapse=", "),
-                        " USING PARAMETERS model='", sitecode,
+                        " USING PARAMETERS model='dbadmin/", sitecode,
                         "_rfmodel') FROM cit.", sitecode,
                         "_predictor WHERE datayear = 2000);")
     sqlQuery(con, apply_sql)
