@@ -42,7 +42,7 @@ foreach (sitecode=sitecodes) %do% {
                         paste(pred_cols, collapse=", "),
                         " USING PARAMETERS model='dbadmin/", sitecode,
                         "_rfmodel') FROM cit.", sitecode,
-                        "_predictor WHERE datayear = 2000);")
+                        "_predictor);")
     sqlQuery(con, apply_sql)
     message(date(), ": Finished running in-database prediction in vertica")
 
