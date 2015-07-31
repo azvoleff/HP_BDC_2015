@@ -16,7 +16,7 @@ rfmodel <- hpdRF_parallelTree(type ~ ., data=train_data, na.action=na.omit,
                               ntree=1000)
 message(date(), ": Finished training random forest model")
 
-message(date(), ": Running in-database prediction in vertica")
+message(date(), ": Running in-database prediction in HP Vertica")
 
 # Deploy model to Vertica DB
 sqlQuery(con, "DELETE FROM R_models WHERE model = (SELECT DeleteModel(USING PARAMETERS model = 'dbadmin/PSH_rfmodel') over());")
@@ -32,4 +32,4 @@ sqlQuery(con, paste0("INSERT INTO cit.PSH_prediction (SELECT randomForestpredict
                      paste(pred_cols, collapse=", "),
                      " USING PARAMETERS model='PSH_rfmodel') FROM cit.PSH_predictor WHERE datayear = 2010);")
 
-message(date(), ": Finished running in-database prediction in vertica")
+message(date(), ": Finished running in-database prediction in HP Vertica")
